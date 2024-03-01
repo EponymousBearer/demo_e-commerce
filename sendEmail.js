@@ -11,8 +11,8 @@ export const sendEmail = async (
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "qwertyuiop1221qazxsw@gmail.com", // generated ethereal user
-      pass: "wbgcvyyhhxdsgafr", // generated ethereal password
+      user: "jibrandevn@gmail.com", // generated ethereal user
+      pass: "dfjuzfeftdmnyjrv", // generated ethereal password
     },
     tls: {
       rejectUnauthorized: false,

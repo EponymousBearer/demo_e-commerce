@@ -1,7 +1,10 @@
 import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema({
-  username: {
+  firstname: {
+    type: String,
+  },
+  lastname: {
     type: String,
   },
   email: {
@@ -10,11 +13,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
-  phone: { type: Number, },
-  avatar: {
-    type: String,  
-  }
-
 });
 
 const Users = mongoose.model("Users", userSchema);

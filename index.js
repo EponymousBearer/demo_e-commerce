@@ -40,6 +40,5 @@ app.post('/how-to-sent-email', async (req, res) => {
   await sendEmail(subjecta, message, send_to, sent_from, reply_to);
 });
 ////////////////////////////////////////////////////////////////////////////
-const CONNECTION_URL = "mongodb+srv://jibran:jibranmern@clusterone.u74t8kf.mongodb.net/?retryWrites=true&w=majority";
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, }).then(() => { console.log('Connected Succesfully.') }).catch((err) => console.log('no connection ', err))
 const server = app.listen(PORT, () => console.log("Listening on port ", PORT)); 
