@@ -141,7 +141,7 @@ export const email = async (req, res) => {
     <p style="color: #555; font-size: 16px; line-height: 1.6;">Hello,</p>
     <p style="color: #555; font-size: 16px; line-height: 1.6;">You have requested to reset your password. Please click the button below to reset your password:</p>
     <p style="text-align: center; margin: 20px 0;">
-      <a href="http://localhost:5173/reset-new-password/${user._id}/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reset Password</a>
+      <a href="https://velvety-syrniki-62e6b9.netlify.app/reset-new-password/${user._id}/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reset Password</a>
     </p>
     <p style="color: #555; font-size: 16px; line-height: 1.6;">If you did not request this change, please ignore this email.</p>
     <div style="margin-top: 20px; font-size: 14px; color: #888;">
