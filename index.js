@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 import multer from 'multer';
 import userRouter from './Routes/user.js'
 
-const PORT = process.env.PORT || 5006;
+const PORT = process.env.PORT || 5003;
 dotenv.config();
 const app = express();
 app.use(express.json({ limit: "30mb", extended: true }));
