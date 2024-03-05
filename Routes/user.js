@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, signin, email, restPassword } from "../Controllers/user.js";
+import { signup, signin, email, restPassword, get_single_data, updatecontact } from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -19,7 +19,7 @@ const loginLimiter = rateLimit({
 router.post("/signin", (req, res, next) => {
   const { email } = req.body;
   const { ipp } = req.body;
-  console.log('object',ipp);
+  console.log('object', ipp);
   if (!userLoginAttempts[ipp]) {
     userLoginAttempts[ipp] = 1;
   } else {
@@ -33,6 +33,8 @@ router.post("/signin", (req, res, next) => {
 }, loginLimiter, signin);
 
 router.post("/signup", signup);
+router.get("/singledata/:id", get_single_data);
+router.put("/updatecontact/:id", updatecontact);
 router.post("/email", email);
 router.post("/reset-password/:id/:token", restPassword);
 // router.get("/update/Admin", updateproduct);

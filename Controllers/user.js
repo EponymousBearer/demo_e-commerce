@@ -149,3 +149,30 @@ export const restPassword = async (req, res) => {
     console.log(error);
   }
 };
+
+export const get_single_data =  async (req, res) => {
+  console.log('object');
+  const id = req.params.id; // Get the ID from URL parameter
+
+  try {
+    const contact = await UserModal.findById(id);
+
+    if (contact) {
+      res.status(200).json({ success: true, contact });
+    } else {
+      res.status(404).json({ success: false, message: 'Contact not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const updatecontact = async (req, res) => {
+  const abc = req.params.id;
+  let result = await UserModal.updateOne(
+    { _id: req.params.id },
+    { $set: req.body }
+  );
+
+  res.send(abc);
+};
