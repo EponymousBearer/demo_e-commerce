@@ -194,7 +194,7 @@ function base64ToImage(base64String, filename) {
     if (err) {
       console.error('Error:', err);
     } else {
-      console.log('Image saved successfully:', imagePath);
+      console.log('Image  saved successfully:', imagePath);
     }
   });
 
