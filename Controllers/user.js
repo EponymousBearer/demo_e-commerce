@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserModal from "../Model/user.js";
+import FineTuneModal from "../Model/FinetuneDetails.js";
 import fs from 'fs';
 import path from 'path';
-import { sendEmail } from '../sendEmail.js' 
+import { sendEmail } from '../sendEmail.js'
 import rateLimit from 'express-rate-limit';
 
 const secret = 'test';
@@ -119,30 +120,30 @@ export const email = async (req, res) => {
 };
 
 export const restPassword = async (req, res) => {
-  const {id, token} = req.params
-  const {password} = req.body
+  const { id, token } = req.params
+  const { password } = req.body
 
   try {
-    const oldUser = await UserModal.findOne({ _id:id });
+    const oldUser = await UserModal.findOne({ _id: id });
 
     if (!oldUser) {
       return res.status(400).json({ success: false, message: "Record does not exist" });
     }
 
     jwt.verify(token, process.env.jwt_secret_key, (err, decoded) => {
-      if(err) {
+      if (err) {
         console.log("error of token");
         return res.status(400).json({ success: false, message: "Error with token" });
       } else {
-          bcrypt.hash(password, 10)
+        bcrypt.hash(password, 10)
           .then(hash => {
-              UserModal.findByIdAndUpdate({_id: id}, {password: hash})
-              .then(u => res.send({Status: "Success"}))
-              .catch(err => res.send({Status: err}))
+            UserModal.findByIdAndUpdate({ _id: id }, { password: hash })
+              .then(u => res.send({ Status: "Success" }))
+              .catch(err => res.send({ Status: err }))
           })
-          .catch(err => res.send({Status: err}))
+          .catch(err => res.send({ Status: err }))
       }
-  })
+    })
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Something went wrong" });
@@ -150,7 +151,7 @@ export const restPassword = async (req, res) => {
   }
 };
 
-export const get_single_data =  async (req, res) => {
+export const get_single_data = async (req, res) => {
   console.log('object');
   const id = req.params.id; // Get the ID from URL parameter
 
@@ -175,4 +176,42 @@ export const updatecontact = async (req, res) => {
   );
 
   res.send(abc);
+};
+
+function base64ToImage(base64String, filename) {
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(base64Data, 'base64');
+  const currentDir = process.cwd();
+  const uploadDir = path.join(currentDir, 'uploads');
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+  }
+
+  const imagePath = path.join(uploadDir, filename);
+
+  fs.writeFile(imagePath, buffer, err => {
+    if (err) {
+      console.error('Error:', err);
+    } else {
+      console.log('Image saved successfully:', imagePath);
+    }
+  });
+
+  return imagePath;
+}
+
+export const addFinetune = async (req, res) => {
+  console.log(req.body)
+  const { date, time, status, pdf_base64,fileName } = req.body;
+
+  try {
+    // const imagePath1 = base64ToImage(pdf_base64, fileName);
+    const imagePath = `${req.protocol}://${req.get('host')}/uploads/${fileName}`; 
+    const result = await FineTuneModal.create({ date, time, status, pdf_base64:imagePath });
+    res.status(201).json({ success: true, result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Something went wrong" });
+    console.log(error);
+  }
 };

@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, signin, email, restPassword, get_single_data, updatecontact } from "../Controllers/user.js";
+import { signup, signin, email, restPassword, get_single_data, updatecontact,addFinetune } from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -33,6 +33,7 @@ router.post("/signin", (req, res, next) => {
 }, loginLimiter, signin);
 
 router.post("/signup", signup);
+router.post("/addFinetune", addFinetune);
 router.get("/singledata/:id", get_single_data);
 router.put("/updatecontact/:id", updatecontact);
 router.post("/email", email);
