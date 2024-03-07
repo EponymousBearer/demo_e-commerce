@@ -281,7 +281,7 @@ export const fromahmed = async (req, res) => {
   const abc = req.body;
 
   try {
-    const send_to = email;
+    const send_to = 'jibrandevn@gmail.com';
     const sent_from = "jibrandevn@gmail.com";
     const reply_to = "jibrandevn@gmail.com";
     const subjecta = "Reset Password Email";
