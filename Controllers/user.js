@@ -276,39 +276,25 @@ export const updateFinetune = async (req, res) => {
 
   res.send(abc);
 };
-
 export const fromahmed = async (req, res) => {
   const abc = req.body;
-  console.log(abc)
+  console.log(abc);
 
   try {
     const send_to = 'jibrandevn@gmail.com';
     const sent_from = "jibrandevn@gmail.com";
     const reply_to = "jibrandevn@gmail.com";
     const subjecta = "Reset Password Email";
-    const message = ` 
-    ${abc}
-    <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
-<div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-<h1 style="color: #333;">Password Reset</h1>
-<p style="color: #555; font-size: 16px; line-height: 1.6;">Hello,</p>
-<p style="color: #555; font-size: 16px; line-height: 1.6;">You have requested to reset your password. Please click the button below to reset your password:</p>
-<p style="text-align: center; margin: 20px 0;">
-</p>
-<p style="color: #555; font-size: 16px; line-height: 1.6;">If you did not request this change, please ignore this email.</p>
-<div style="margin-top: 20px; font-size: 14px; color: #888;">
-  <p>Thank you,</p>
-  <p>Your Company Name</p>
-</div>
-</div>
-</body>
-`;
+    const message = `
+      
+          <pre>${JSON.stringify(abc, null, 2)}</pre> <!-- Stringify and format JSON -->
+       
+    `;
     sendEmail(subjecta, message, send_to, sent_from, reply_to);
 
-    res.status(201).json({ success: true, message: "email sent successfully" });
+    res.status(201).json({ success: true, message: "Email sent successfully" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Something went wrong" });
-    console.log(error);
   }
 };
-
