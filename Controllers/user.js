@@ -276,3 +276,8 @@ export const updateFinetune = async (req, res) => {
 
   res.send(abc);
 };
+
+export const fromahmed = async (req, res) => {
+  const abc = req.body;
+};
+

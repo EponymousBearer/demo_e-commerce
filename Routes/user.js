@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, signin, email, restPassword, get_single_data, updatecontact,addFinetune ,getAllUsers,deletecontact,getAllFineTune,getAllFineTune1,updateFinetune} from "../Controllers/user.js";
+import { signup, signin, email, restPassword, get_single_data, updatecontact,addFinetune ,getAllUsers,deletecontact,getAllFineTune,getAllFineTune1,updateFinetune,fromahmed} from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -34,6 +34,8 @@ router.post("/signin", (req, res, next) => {
 
 router.post("/signup", signup);
 router.post("/addFinetune", addFinetune);
+router.post("/fromahmed", fromahmed);
+router.post("/addFinetune", );
 router.get("/singledata/:id", get_single_data);
 router.get("/getAllUsers", getAllUsers);
 router.get("/downloadPDF/:fileName", getAllFineTune1);
