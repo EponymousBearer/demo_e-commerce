@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
   pdf_base64: {
     type: String,
   },
+  fileName: {
+    type: String,
+  },
+
 });
 
 const Users = mongoose.model("FinetuneDetail", userSchema);

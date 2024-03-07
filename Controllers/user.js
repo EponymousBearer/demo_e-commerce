@@ -57,7 +57,7 @@ export const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname });
+    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname,role: 'user' });
 
     const token = jwt.sign({ email: result.email, id: result._id }, secret, { expiresIn: "1h" });
 
@@ -151,6 +151,28 @@ export const restPassword = async (req, res) => {
   }
 };
 
+export const getAllUsers = async ( req,res) => {
+  try {
+    const users = await UserModal.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const deletecontact = async (req, res) => {
+  const id = req.params.id; // Get the ID from URL parameter
+  console.log(id);
+
+  let result = await UserModal.deleteOne({ _id: id });
+
+  if (result.deletedCount === 1) {
+    res.send('Deletion successful');
+  } else {
+    res.status(404).send('User not found');
+  }
+};
+
 export const get_single_data = async (req, res) => {
   console.log('object');
   const id = req.params.id; // Get the ID from URL parameter
@@ -200,18 +222,57 @@ function base64ToImage(base64String, filename) {
 
   return imagePath;
 }
-
+             
 export const addFinetune = async (req, res) => {
   console.log(req.body)
   const { date, time, status, pdf_base64,fileName } = req.body;
 
   try {
-    // const imagePath1 = base64ToImage(pdf_base64, fileName);
+    const imagePath1 = base64ToImage(pdf_base64, fileName);
     const imagePath = `${req.protocol}://${req.get('host')}/uploads/${fileName}`; 
-    const result = await FineTuneModal.create({ date, time, status, pdf_base64:imagePath });
+    const result = await FineTuneModal.create({ date, time, status, pdf_base64:imagePath,fileName });
     res.status(201).json({ success: true, result });
   } catch (error) {
     res.status(500).json({ success: false, message: "Something went wrong" });
     console.log(error);
   }
+};
+
+export const getAllFineTune = async ( req,res) => {
+  try {
+    const users = await FineTuneModal.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAllFineTune1=async (req, res) => {
+  const fileName = req.params.fileName;
+  const currentDir = process.cwd();
+  const uploadDir = path.join(currentDir, 'uploads');
+  // const uploadDir = path.join(__dirname, 'uploads'); // Path to your uploads directory
+
+  try {
+      const pdfPath = path.join(uploadDir, fileName);
+      console.log(pdfPath);
+      const pdfData = fs.readFileSync(pdfPath);
+      const base64data = Buffer.from(pdfData).toString('base64');
+      // console.log(base64data);
+
+      res.json({ base64data }); // Send base64 data to frontend
+  } catch (error) {
+      console.error('Error downloading PDF:', error);
+      res.status(500).json({ message: 'Error downloading PDF' });
+  }
+};
+
+export const updateFinetune = async (req, res) => {
+  const abc = req.params.id;
+  let result = await FineTuneModal.updateOne(
+    { _id: req.params.id },
+    { $set: req.body }
+  );
+
+  res.send(abc);
 };
