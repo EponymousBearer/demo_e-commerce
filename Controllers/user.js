@@ -6,8 +6,19 @@ import fs from 'fs';
 import path from 'path';
 import { sendEmail } from '../sendEmail.js'
 import rateLimit from 'express-rate-limit';
-
+import { MongoClient ,ObjectId } from 'mongodb';
+import multer from 'multer';
+import AWS  from 'aws-sdk';
 const secret = 'test';
+
+AWS.config.update({
+  accessKeyId: 'AKIAU5FA3AS4N3SGVO6F',
+  secretAccessKey: '0Uo18kboBtarVYXR3qciKeRfiTEDDt5fN8aQtyle',
+  region: 'us-east-1', // Change to your region
+});
+
+// Create an instance of the Polly SDK
+const polly = new AWS.Polly();
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -224,19 +235,34 @@ function base64ToImage(base64String, filename) {
 }
              
 export const addFinetune = async (req, res) => {
-  console.log(req.body)
-  const { date, time, status, pdf_base64,fileName } = req.body;
+  const { date, time, status, pdf_base64, fileName, id } = req.body;
 
   try {
-    const imagePath1 = base64ToImage(pdf_base64, fileName);
-    const imagePath = `${req.protocol}://${req.get('host')}/uploads/${fileName}`; 
-    const result = await FineTuneModal.create({ date, time, status, pdf_base64:imagePath,fileName });
+    let newFileName = fileName;
+    let count = 1;
+    
+    // Check if a document with the same file name already exists
+    let existingDocument = await FineTuneModal.findOne({ fileName: newFileName });
+    
+    // If a document with the same name exists, add a number to the end of the file name
+    while (existingDocument) {
+      newFileName = `${fileName.replace(/\.[^/.]+$/, '')}_${count}.${fileName.split('.').pop()}`;
+      existingDocument = await FineTuneModal.findOne({ fileName: newFileName });
+      count++;
+    }
+ 
+    // Save the document with the new file name
+    const imagePath1 = base64ToImage(pdf_base64, newFileName);
+    const imagePath = `${req.protocol}://${req.get('host')}/uploads/${newFileName}`;
+    
+    const result = await FineTuneModal.create({ date, time, status, pdf_base64: imagePath, fileName: newFileName, id });
     res.status(201).json({ success: true, result });
   } catch (error) {
     res.status(500).json({ success: false, message: "Something went wrong" });
     console.log(error);
   }
 };
+
 
 export const getAllFineTune = async ( req,res) => {
   try {
@@ -269,13 +295,15 @@ export const getAllFineTune1=async (req, res) => {
 
 export const updateFinetune = async (req, res) => {
   const abc = req.params.id;
-  let result = await FineTuneModal.updateOne(
-    { _id: req.params.id },
-    { $set: req.body }
-  );
+  console.log(abc);
+  // let result = await FineTuneModal.updateOne(
+  //   { _id: req.params.id },
+  //   { $set: req.body }
+  // );
 
-  res.send(abc);
+  // res.send(abc);
 };
+
 export const fromahmed = async (req, res) => {
   const abc = req.body;
   console.log(abc);
@@ -298,3 +326,136 @@ export const fromahmed = async (req, res) => {
     res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
+
+export const getAllFineTune_Ids = async ( req,res) => {
+  const client = new MongoClient('mongodb+srv://jibran:jibranmern@clusterone.u74t8kf.mongodb.net/test?retryWrites=true&w=majority');
+
+  try {
+    await client.connect();
+    const database = client.db('test');
+    const collection = database.collection('document');
+    const users = await collection.find({}, { projection: { _id: 1 } }).toArray();
+    // Extract only the _id values from the array of objects
+    const ids = users.map(user => user._id);
+
+    // Log all IDs
+
+    res.status(200).json(ids);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    // Close the connection after query is done
+    await client.close();
+  }
+};
+
+export const deleteFineTuneByIds = async (req, res) => {
+  const { idsBetween } = req.body;
+  console.log(idsBetween);
+
+  if (!idsBetween || !Array.isArray(idsBetween) || idsBetween.length === 0) {
+    return res.status(400).json({ message: 'Invalid IDs provided' });
+  }
+
+  const client = new MongoClient('mongodb+srv://jibran:jibranmern@clusterone.u74t8kf.mongodb.net/test?retryWrites=true&w=majority');
+
+  try {
+    await client.connect();
+    const database = client.db('test');
+    const collection = database.collection('document');
+
+
+
+    for (let id of idsBetween) {
+      const objectId = new ObjectId(id);
+      // Delete the document with the specified _id
+      let result = await collection.deleteOne({ _id: objectId });
+
+      // Check if any document was deleted
+      if (result.deletedCount === 1) {
+        console.log(`Deleted document with _id: ${id}`);
+      } else {
+        console.log(`No document found with _id: ${id}`);
+      }
+    }
+
+    res.status(200).json({ message: 'Deletion successful' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    await client.close();
+  }
+};
+
+export const deleteFineTuneModal = async (req, res) => {
+  const id = req.params.id; // Get the ID from URL parameter
+  console.log(id);
+
+  try {
+    // Find the document to get the file name
+    const document = await FineTuneModal.findById(id);
+    if (!document) {
+      return res.status(404).send('Document not found');
+    }
+
+    // Get the file name from the document
+    const fileName = document.fileName;
+
+    // Delete the document from the database
+    let result = await FineTuneModal.deleteOne({ _id: id });
+
+    if (result.deletedCount === 1) {
+      // Delete the file from the uploads directory
+      const currentDir = process.cwd();
+      const uploadDir = path.join(currentDir, 'uploads');
+
+      const filePath = path.join(uploadDir, fileName);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error('Error deleting file:', err);
+        } else {
+          console.log('File deleted successfully');
+        }
+      });
+
+      res.send('Deletion successful');
+    } else {
+      res.status(404).send('Document not found');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal server error');
+  }
+};
+
+export const textToSpeech =async (req, res) => {
+  const { text } = req.body;
+
+  const params = {
+    OutputFormat: 'mp3', // Change output format if needed
+    Text: text,
+    VoiceId: 'Joanna', // Change to desired voice
+  };
+
+  try {
+    const data = await polly.synthesizeSpeech(params).promise();
+
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': data.AudioStream.length,
+    });
+
+    res.send(data.AudioStream);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error synthesizing speech');
+  }
+}
+
+const transcribe = new AWS.TranscribeService();
+
+// Multer setup for handling file uploads
+
+

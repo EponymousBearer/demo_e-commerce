@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema({
   fileName: {
     type: String,
   },
+  id: {
+    type: String,
+  }
 
 });
 

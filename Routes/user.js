@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, signin, email, restPassword, get_single_data, updatecontact,addFinetune ,getAllUsers,deletecontact,getAllFineTune,getAllFineTune1,updateFinetune,fromahmed} from "../Controllers/user.js";
+import { signup, getAllFineTune_Ids, textToSpeech, deleteFineTuneByIds, deleteFineTuneModal, signin, email, restPassword, get_single_data, updatecontact, addFinetune, getAllUsers, deletecontact, getAllFineTune, getAllFineTune1, updateFinetune, fromahmed } from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -35,16 +35,20 @@ router.post("/signin", (req, res, next) => {
 router.post("/signup", signup);
 router.post("/addFinetune", addFinetune);
 router.post("/fromahmed", fromahmed);
-router.post("/addFinetune", );
+router.post("/addFinetune",);
+router.post("/deleteFineTuneByIds", deleteFineTuneByIds);
 router.get("/singledata/:id", get_single_data);
 router.get("/getAllUsers", getAllUsers);
+router.get("/getAllFineTune_Ids", getAllFineTune_Ids);
 router.get("/downloadPDF/:fileName", getAllFineTune1);
 router.get("/getAllFineTune", getAllFineTune);
 router.put("/updatecontact/:id", updatecontact);
 router.put("/updateFinetune/:id", updateFinetune);
 router.delete("/deletecontact/:id", deletecontact);
+router.delete("/deleteFineTuneModal/:id", deleteFineTuneModal);
 router.post("/email", email);
 router.post("/reset-password/:id/:token", restPassword);
+router.post("/textToSpeech", textToSpeech);
 // router.get("/update/Admin", updateproduct);
 
 export default router;
