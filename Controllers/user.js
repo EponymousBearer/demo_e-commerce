@@ -2,13 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserModal from "../Model/user.js";
 import FineTuneModal from "../Model/FinetuneDetails.js";
+import Session from "../Model/Session.js";
 import fs from 'fs';
 import path from 'path';
 import { sendEmail } from '../sendEmail.js'
 import rateLimit from 'express-rate-limit';
-import { MongoClient ,ObjectId } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import multer from 'multer';
-import AWS  from 'aws-sdk';
+import AWS from 'aws-sdk';
 const secret = 'test';
 
 AWS.config.update({
@@ -19,19 +20,6 @@ AWS.config.update({
 
 // Create an instance of the Polly SDK
 const polly = new AWS.Polly();
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login requests per windowMs
-  message: 'Too many login attempts, please try again later.',
-  handler: (req, res) => {
-    res.status(429).json({ error: "Too many login attempts, please try again later." });
-  },
-  keyGenerator: (req) => {
-    return req.ip; // Use IP address as the key for rate limiting
-  },
-  store: rateLimit.MemoryStore, // Use MemoryStore for in-memory rate limiting
-});
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
@@ -65,14 +53,23 @@ export const signup = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
-
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname,role: 'user' });
+    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname, role: 'user' });
 
     const token = jwt.sign({ email: result.email, id: result._id }, secret, { expiresIn: "1h" });
 
-    res.status(201).json({ success: true, result, token });
+    let currentDate = new Date(); let day = currentDate.getDate(); let month = currentDate.getMonth() + 1; let year = currentDate.getFullYear(); let formattedDate = `${day}-${month}-${year}`; let hours = currentDate.getHours(); let minutes = currentDate.getMinutes(); let seconds = currentDate.getSeconds(); let meridiem = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12; let formattedTime = `${hours}:${minutes}:${seconds} ${meridiem}`;
+ 
+    let time = formattedTime
+    let date = formattedDate
+    let userid = result._id
+   let messages= [ { role: '', message: '' } ]
+
+   const result1 = await Session.create({ date, time, userid, messages });
+   
+
+    res.status(201).json({ success: true, result, token,result1 });
   } catch (error) {
     res.status(500).json({ success: false, message: "Something went wrong" });
     console.log(error);
@@ -162,7 +159,7 @@ export const restPassword = async (req, res) => {
   }
 };
 
-export const getAllUsers = async ( req,res) => {
+export const getAllUsers = async (req, res) => {
   try {
     const users = await UserModal.find();
     res.status(200).json(users);
@@ -233,28 +230,28 @@ function base64ToImage(base64String, filename) {
 
   return imagePath;
 }
-             
+
 export const addFinetune = async (req, res) => {
   const { date, time, status, pdf_base64, fileName, id } = req.body;
 
   try {
     let newFileName = fileName;
     let count = 1;
-    
+
     // Check if a document with the same file name already exists
     let existingDocument = await FineTuneModal.findOne({ fileName: newFileName });
-    
+
     // If a document with the same name exists, add a number to the end of the file name
     while (existingDocument) {
       newFileName = `${fileName.replace(/\.[^/.]+$/, '')}_${count}.${fileName.split('.').pop()}`;
       existingDocument = await FineTuneModal.findOne({ fileName: newFileName });
       count++;
     }
- 
+
     // Save the document with the new file name
     const imagePath1 = base64ToImage(pdf_base64, newFileName);
     const imagePath = `${req.protocol}://${req.get('host')}/uploads/${newFileName}`;
-    
+
     const result = await FineTuneModal.create({ date, time, status, pdf_base64: imagePath, fileName: newFileName, id });
     res.status(201).json({ success: true, result });
   } catch (error) {
@@ -263,8 +260,7 @@ export const addFinetune = async (req, res) => {
   }
 };
 
-
-export const getAllFineTune = async ( req,res) => {
+export const getAllFineTune = async (req, res) => {
   try {
     const users = await FineTuneModal.find();
     res.status(200).json(users);
@@ -273,23 +269,23 @@ export const getAllFineTune = async ( req,res) => {
   }
 };
 
-export const getAllFineTune1=async (req, res) => {
+export const getAllFineTune1 = async (req, res) => {
   const fileName = req.params.fileName;
   const currentDir = process.cwd();
   const uploadDir = path.join(currentDir, 'uploads');
   // const uploadDir = path.join(__dirname, 'uploads'); // Path to your uploads directory
 
   try {
-      const pdfPath = path.join(uploadDir, fileName);
-      console.log(pdfPath);
-      const pdfData = fs.readFileSync(pdfPath);
-      const base64data = Buffer.from(pdfData).toString('base64');
-      // console.log(base64data);
+    const pdfPath = path.join(uploadDir, fileName);
+    console.log(pdfPath);
+    const pdfData = fs.readFileSync(pdfPath);
+    const base64data = Buffer.from(pdfData).toString('base64');
+    // console.log(base64data);
 
-      res.json({ base64data }); // Send base64 data to frontend
+    res.json({ base64data }); // Send base64 data to frontend
   } catch (error) {
-      console.error('Error downloading PDF:', error);
-      res.status(500).json({ message: 'Error downloading PDF' });
+    console.error('Error downloading PDF:', error);
+    res.status(500).json({ message: 'Error downloading PDF' });
   }
 };
 
@@ -327,7 +323,7 @@ export const fromahmed = async (req, res) => {
   }
 };
 
-export const getAllFineTune_Ids = async ( req,res) => {
+export const getAllFineTune_Ids = async (req, res) => {
   const client = new MongoClient('mongodb+srv://jibran:jibranmern@clusterone.u74t8kf.mongodb.net/test?retryWrites=true&w=majority');
 
   try {
@@ -430,7 +426,7 @@ export const deleteFineTuneModal = async (req, res) => {
   }
 };
 
-export const textToSpeech =async (req, res) => {
+export const textToSpeech = async (req, res) => {
   const { text } = req.body;
 
   const params = {
@@ -454,8 +450,58 @@ export const textToSpeech =async (req, res) => {
   }
 }
 
-const transcribe = new AWS.TranscribeService();
+//sessions
+export const addSession = async (req, res) => {
+  const { date, time, userid, messages } = req.body;
 
-// Multer setup for handling file uploads
+  try {
+    const result = await FineTuneModal.create({ date, time, userid, messages });
+    res.status(201).json({ success: true, result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Something went wrong" });
+    console.log(error);
+  }
+};
+
+export const get_single_session = async (req, res) => {
+  console.log('objdsdasdasdect');
+  const id = req.params.id; // Get the ID from URL parameter
+
+  try {
+    const contact = await Session.find({userid:id});
+
+    if (contact) {
+      res.status(200).json({ success: true, contact });
+    } else {
+      res.status(404).json({ success: false, message: 'Contact not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const addMessageInSession = async (req, res) => {
+  const { sessionid } = req.params.id;
+  const { userid } = req.params.id;
+  const {  role, message } = req.body;
+
+  try {
+    const session = await Session.findOne({ _id: sessionid, userid: userid });
+    
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found or unauthorized' });
+    }
+
+    // Add the new message to the session
+    session.messages.push({ role, message });
+    await session.save();
+
+    res.status(201).json({ message: 'Message added to session successfully' });
+  } catch (error) {
+    console.error('Error adding message to session:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 
 

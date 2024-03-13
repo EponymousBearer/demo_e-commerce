@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, getAllFineTune_Ids, textToSpeech, deleteFineTuneByIds, deleteFineTuneModal, signin, email, restPassword, get_single_data, updatecontact, addFinetune, getAllUsers, deletecontact, getAllFineTune, getAllFineTune1, updateFinetune, fromahmed } from "../Controllers/user.js";
+import { signup, getAllFineTune_Ids,addSession,get_single_session,addMessageInSession, textToSpeech, deleteFineTuneByIds, deleteFineTuneModal, signin, email, restPassword, get_single_data, updatecontact, addFinetune, getAllUsers, deletecontact, getAllFineTune, getAllFineTune1, updateFinetune, fromahmed } from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -38,6 +38,7 @@ router.post("/fromahmed", fromahmed);
 router.post("/addFinetune",);
 router.post("/deleteFineTuneByIds", deleteFineTuneByIds);
 router.get("/singledata/:id", get_single_data);
+router.get("/get_single_session/:id", get_single_session);
 router.get("/getAllUsers", getAllUsers);
 router.get("/getAllFineTune_Ids", getAllFineTune_Ids);
 router.get("/downloadPDF/:fileName", getAllFineTune1);
@@ -49,6 +50,8 @@ router.delete("/deleteFineTuneModal/:id", deleteFineTuneModal);
 router.post("/email", email);
 router.post("/reset-password/:id/:token", restPassword);
 router.post("/textToSpeech", textToSpeech);
+router.post("/addSession", addSession);
+router.post("/addMessageInSession/:id/:sessionid", addMessageInSession);
 // router.get("/update/Admin", updateproduct);
 
 export default router;
