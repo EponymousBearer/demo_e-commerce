@@ -432,7 +432,9 @@ export const textToSpeech = async (req, res) => {
   const params = {
     OutputFormat: 'mp3', // Change output format if needed
     Text: text,
-    VoiceId: 'Joanna', // Change to desired voice
+    VoiceId: 'Joey',
+
+    // Change to desired voice
   };
 
   try {
