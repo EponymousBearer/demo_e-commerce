@@ -7,6 +7,9 @@ import nodemailer from "nodemailer";
 import multer from 'multer';
 import userRouter from './Routes/user.js'
 import AWS  from 'aws-sdk';
+import fs from 'fs'
+import { createClient } from '@deepgram/sdk'
+
 
 const PORT = process.env.PORT || 5003;
 dotenv.config();
@@ -30,6 +33,56 @@ const upload = multer({ storage });
 
 
 app.use("/auth", userRouter);
+app.post('/ap', async (req, res) => {
+  try {
+      let audioData = req.body.audio; // Accessing the audio data from the request body
+
+      // Remove data URI prefix
+      const base64DataWithoutPrefix = audioData.replace(/^data:audio\/wav;base64,/, '');
+
+      // Convert base64 to binary buffer
+      const binaryData = Buffer.from(base64DataWithoutPrefix, 'base64');
+
+      // Write binary data to .wav file 
+      fs.writeFileSync('audio.wav', binaryData);
+      console.log('Audio file saved as audio.wav');
+
+      // Call transcribeFile with the file path
+      const transcript = await transcribeFile('audio.wav');
+      // const aiResponse = await getAIResponse(transcript);
+
+      console.log(transcript);
+
+  
+      res.json({ transcript });
+  } catch (error) {
+      console.error('Error processing audio:', error);
+      res.status(500).json({ error: 'Error processing audio' });
+  }
+});
+const transcribeFile = async (filePath) => {
+  console.log('object');
+  // STEP 1: Create a Deepgram client using the API key
+  const deepgram = createClient('1cee0be838346e426c7ccc86283a04d69ca850b3');
+
+  // STEP 2: Call the transcribeFile method with the audio payload and options
+  const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+      // path to the audio file
+      fs.readFileSync(filePath),
+      // STEP 3: Configure Deepgram options for audio analysis
+      {
+          model: "nova-2",
+          smart_format: true,
+      }
+  );
+
+  if (error) throw error;
+  // STEP 4: Print the results
+
+  if (!error) {
+      return result.results.channels[0].alternatives[0].transcript;
+  };
+};
 
 AWS.config.update({
   accessKeyId: 'AKIAU5FA3AS4N3SGVO6F',
