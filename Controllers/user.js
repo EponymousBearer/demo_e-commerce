@@ -45,7 +45,7 @@ export const signin = async (req, res) => {
     const expirationTime = new Date();
     expirationTime.setHours(expirationTime.getHours() + 24); // 24 hours from now
     // expirationTime.setMinutes(expirationTime.getMinutes() + 3); 
-    const session = new UserSession({ id: oldUser._id, expiresAt: expirationTime });
+    const session = new UserSession({ id: oldUser._id,  token:token });
     await session.save();
  
     res.status(200).json({ result: oldUser, token, success: true });
@@ -174,7 +174,8 @@ export const VerifyUseronAllPages = async (req, res) => {
             console.log(decoded.id);
             const contact = await UserModal.findById(decoded.id);
             const contact1 = await UserSession.findOne({id:id});
-            if (contact && decoded.id===id &&!contact1) {
+          
+            if (contact && decoded.id===id&& contact1.token==token) {
               if (contact.status == 'approved') {
                 if (contact.role == 'admin') {
                   return res.status(201).json({ message: 'User is Admin' });
@@ -297,6 +298,15 @@ export const restPassword = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await UserModal.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAllUserSession = async (req, res) => {
+  try {
+    const users = await UserSession.find();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });

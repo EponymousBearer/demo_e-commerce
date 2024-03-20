@@ -5,10 +5,10 @@ const userSchema = new mongoose.Schema({
     id: {
         type: String,
     },
-    expiresAt: {
+  
+    token: {
         type: String,
     }
-
 });
 
 const Users = mongoose.model("UserSession", userSchema);
