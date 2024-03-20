@@ -9,7 +9,9 @@ import userRouter from './Routes/user.js'
 import AWS  from 'aws-sdk';
 import fs from 'fs'
 import { createClient } from '@deepgram/sdk'
-
+import session from "express-session";
+import cron from 'node-cron';
+import userSession from './Model/UserSession.js'
 
 const PORT = process.env.PORT || 5003;
 dotenv.config();
@@ -18,6 +20,11 @@ app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
 app.get("/", (req, res) => res.status(200).send("Hello world!!!!!!"));
+app.use(session({
+  secret: 'secret', // Change this to a random string
+  resave: false,
+  saveUninitialized: true
+}));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -30,7 +37,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 ////////////////////////////////////////////////////////////////////////////
-
 
 app.use("/auth", userRouter);
 app.post('/ap', async (req, res) => {
@@ -90,7 +96,11 @@ AWS.config.update({
   region: 'us-east-1', // Change to your region
 });
 
- 
+cron.schedule('* * * * *', async () => {
+  console.log('Cron job started'); 
+  await userSession.deleteMany({ expiresAt: { $lt: new Date() } });
+});
+
 ////////////////////////////////////////////////////////////////////////////
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, }).then(() => { console.log('Connected Succesfully.') }).catch((err) => console.log('no connection ', err))
 const server = app.listen(PORT, () => console.log("Listening on port ", PORT)); 

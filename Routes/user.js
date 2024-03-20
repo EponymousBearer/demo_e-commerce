@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import rateLimit from 'express-rate-limit';
-import { signup, getAllFineTune_Ids,addSession,get_single_session,addMessageInSession, textToSpeech, deleteFineTuneByIds, deleteFineTuneModal, signin, email, restPassword, get_single_data, updatecontact, addFinetune, getAllUsers, deletecontact, getAllFineTune, getAllFineTune1, updateFinetune, fromahmed } from "../Controllers/user.js";
+import { VerifyEmail, VerifyUseronAllPages, Logout,VerifyUser, getAllFineTune_Ids, addSession, get_single_session, addMessageInSession, textToSpeech, deleteFineTuneByIds, deleteFineTuneModal, signin, email, restPassword, get_single_data, updatecontact, addFinetune, getAllUsers, deletecontact, getAllFineTune, getAllFineTune1, updateFinetune, fromahmed } from "../Controllers/user.js";
 
 const userLoginAttempts = {};
 
@@ -32,9 +32,12 @@ router.post("/signin", (req, res, next) => {
   next();
 }, loginLimiter, signin);
 
-router.post("/signup", signup);
+router.post("/VerifyEmail", VerifyEmail);
+router.post("/VerifyUser/:token", VerifyUser);
+router.post("/VerifyUseronAllPages/:token/:id", VerifyUseronAllPages);
 router.post("/addFinetune", addFinetune);
 router.post("/fromahmed", fromahmed);
+router.post("/Logout/:id", Logout);
 router.post("/addFinetune",);
 router.post("/deleteFineTuneByIds", deleteFineTuneByIds);
 router.get("/singledata/:id", get_single_data);

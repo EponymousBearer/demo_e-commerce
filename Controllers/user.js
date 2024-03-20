@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import UserModal from "../Model/user.js";
 import FineTuneModal from "../Model/FinetuneDetails.js";
 import Session from "../Model/Session.js";
+import UserSession from "../Model/UserSession.js";
 import fs from 'fs';
 import path from 'path';
 import { sendEmail } from '../sendEmail.js'
@@ -10,7 +11,6 @@ import rateLimit from 'express-rate-limit';
 import { MongoClient, ObjectId } from 'mongodb';
 import multer from 'multer';
 import AWS from 'aws-sdk';
-const secret = 'test';
 
 AWS.config.update({
   accessKeyId: 'AKIAU5FA3AS4N3SGVO6F',
@@ -22,19 +22,32 @@ AWS.config.update({
 const polly = new AWS.Polly();
 
 export const signin = async (req, res) => {
-  const { email, password } = req.body;
-
+  let { email, password } = req.body;
+  email = email.toLowerCase();
   try {
+    password = `${password}a`;
+    console.log(password);
     const oldUser = await UserModal.findOne({ email });
 
     if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
-
+ 
     const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
 
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, { expiresIn: "1h" });
-
+    const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, process.env.jwt_secret_key, { expiresIn: "1h" });
+    const existingSession = await UserSession.findOne({ id: oldUser._id });
+    if (existingSession) {
+      return res.status(403).json({ error: 'User already logged in' });
+    }
+  
+    // Create a new session
+    const expirationTime = new Date();
+    expirationTime.setHours(expirationTime.getHours() + 24); // 24 hours from now
+    // expirationTime.setMinutes(expirationTime.getMinutes() + 3); 
+    const session = new UserSession({ id: oldUser._id, expiresAt: expirationTime });
+    await session.save();
+ 
     res.status(200).json({ result: oldUser, token, success: true });
 
   } catch (err) {
@@ -42,39 +55,12 @@ export const signin = async (req, res) => {
   }
 };
 
-export const signup = async (req, res) => {
-  console.log(req.body)
-  const { email, password, firstname, lastname } = req.body;
-
-  try {
-    const oldUser = await UserModal.findOne({ email });
-
-    if (oldUser) {
-      return res.status(400).json({ success: false, message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname, role: 'user' });
-
-    const token = jwt.sign({ email: result.email, id: result._id }, secret, { expiresIn: "1h" });
-
-    let currentDate = new Date(); let day = currentDate.getDate(); let month = currentDate.getMonth() + 1; let year = currentDate.getFullYear(); let formattedDate = `${day}-${month}-${year}`; let hours = currentDate.getHours(); let minutes = currentDate.getMinutes(); let seconds = currentDate.getSeconds(); let meridiem = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12; let formattedTime = `${hours}:${minutes}:${seconds} ${meridiem}`;
- 
-    let time = formattedTime
-    let date = formattedDate
-    let userid = result._id
-   let messages= [ { role: '', message: '' } ]
-
-   const result1 = await Session.create({ date, time, userid, messages });
-   
-
-    res.status(201).json({ success: true, result, token,result1 });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Something went wrong" });
-    console.log(error);
-  }
-};
+export const Logout = async (req, res) => {
+  console.log(req.params.id);
+    const userId = req.params.id; // Assuming you have authentication middleware
+    await UserSession.deleteOne({ id:userId });
+    res.json({ message: 'Logout successful' });
+}
 
 export const email = async (req, res) => {
   console.log(req.body)
@@ -94,7 +80,7 @@ export const email = async (req, res) => {
           return res.status(400).json({ success: false, message: "error" });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.jwt_secret_key, { expiresIn: "1m" })
+        const token = jwt.sign({ id: user._id }, process.env.jwt_secret_key, { expiresIn: "1h" })
 
         const send_to = email;
         const sent_from = "jibrandevn@gmail.com";
@@ -121,6 +107,155 @@ export const email = async (req, res) => {
 
         res.status(201).json({ success: true, message: "email sent successfully" });
       })
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Something went wrong" });
+    console.log(error);
+  }
+};
+
+
+export const VerifyUser = async (req, res) => {
+  const token = req.params.token;
+  console.log(token);
+
+  try {
+    // Verify JWT token
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.jwt_secret_key, async (err, decoded) => {
+        if (err) {
+          console.error('Token verification failed:', err.message);
+          // Send response indicating token expiration
+          return res.status(401).json({ message: 'Token Expired' });
+        }
+        else {
+          console.log('Token verified successfully:', decoded);
+          try {
+            const contact = await UserModal.findById(decoded.id);
+            if (contact) {
+
+              contact.status = "approved";
+              await contact.save();
+              return res.status(200).json({ message: 'User approved successfully' });
+
+            } else {
+              return res.status(404).json({ message: 'User not found' });
+            }
+          } catch (error) {
+            console.error('Error while finding user:', error.message);
+            return res.status(500).send('Internal Server Error');
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).send('Internal Server Error');
+  }
+};
+
+export const VerifyUseronAllPages = async (req, res) => {
+  const token = req.params.token;
+  const id = req.params.id;
+  console.log(token);
+  console.log(id);
+
+  try {
+    // Verify JWT token
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.jwt_secret_key, async (err, decoded) => {
+        if (err) {
+          console.error('Token verification failed:', err.message);
+          // Send response indicating token expiration
+          return res.status(401).json({ message: 'Token Expired' });
+        }
+        else {
+          console.log('Token verified successfully:', decoded);
+          try {
+            console.log(decoded.id);
+            const contact = await UserModal.findById(decoded.id);
+            const contact1 = await UserSession.findOne({id:id});
+            if (contact && decoded.id===id &&contact1) {
+              if (contact.status == 'approved') {
+                if (contact.role == 'admin') {
+                  return res.status(201).json({ message: 'User is Admin' });
+                }
+                else {
+                  return res.status(200).json({ message: 'User is not Admin' });
+
+                }
+              }
+
+            } else {
+              return res.status(404).json({ message: 'error' });
+            }
+          } catch (error) {
+            console.error('Error while finding user:', error.message);
+            return res.status(500).send('Internal Server Error');
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).send('Internal Server Error');
+  }
+};
+
+//signup
+export const VerifyEmail = async (req, res) => {
+
+  console.log(req.body)
+  let { email, password, firstname, lastname } = req.body;
+  try {
+
+    email = email.toLowerCase();
+    const oldUser = await UserModal.findOne({ email });
+
+
+    if (oldUser) {
+      // Check if user status is 'pending'
+      if (oldUser.status === 'pending') {
+        // Delete the user
+        await UserModal.deleteOne({ _id: oldUser._id });
+      }
+      else {
+        return res.status(400).json({ success: false, message: "User already exists" });
+
+      }
+    }
+    password = `${password}a`;
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const result = await UserModal.create({ email, password: hashedPassword, firstname, lastname, role: 'user', status: "pending" });
+
+
+    const token = jwt.sign({ id: result._id }, process.env.jwt_secret_key, { expiresIn: "30m" });
+
+    const send_to = email;
+    const sent_from = "jibrandevn@gmail.com";
+    const reply_to = "jibrandevn@gmail.com";
+    const subjecta = "Email Confirmation Email";
+    const message = `
+      <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h1 style="color: #333;">Password Reset</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hello,</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">You have requested to Register. Please click the button below to Verify Your Email:</p>
+          <p style="text-align: center; margin: 20px 0;">
+            <a href="http://localhost:5173/VerifyEmail/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Verify</a>
+          </p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you did not request this change, please ignore this email.</p>
+          <div style="margin-top: 20px; font-size: 14px; color: #888;">
+            <p>Thank you,</p>
+            <p>Your Company Name</p>
+          </div>
+        </div>
+      </body>
+    `;
+    sendEmail(subjecta, message, send_to, sent_from, reply_to);
+
+    res.status(201).json({ success: true, message: "email sent successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Something went wrong" });
     console.log(error);
@@ -470,7 +605,7 @@ export const get_single_session = async (req, res) => {
   const id = req.params.id; // Get the ID from URL parameter
 
   try {
-    const contact = await Session.find({userid:id});
+    const contact = await Session.find({ userid: id });
 
     if (contact) {
       res.status(200).json({ success: true, contact });
@@ -485,11 +620,11 @@ export const get_single_session = async (req, res) => {
 export const addMessageInSession = async (req, res) => {
   const { sessionid } = req.params.id;
   const { userid } = req.params.id;
-  const {  role, message } = req.body;
+  const { role, message } = req.body;
 
   try {
     const session = await Session.findOne({ _id: sessionid, userid: userid });
-    
+
     if (!session) {
       return res.status(404).json({ message: 'Session not found or unauthorized' });
     }
