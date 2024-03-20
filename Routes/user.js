@@ -11,7 +11,7 @@ const loginLimiter = rateLimit({
   message: 'Too many login attempts, please try again later.',
   keyGenerator: (req) => {
     // Use both IP address and user email as the key for rate limiting
-    return req.body.email;
+    return req.body.ipp;
   },
   store: rateLimit.MemoryStore, // Use MemoryStore for in-memory rate limiting
 });

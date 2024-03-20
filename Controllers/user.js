@@ -174,7 +174,7 @@ export const VerifyUseronAllPages = async (req, res) => {
             console.log(decoded.id);
             const contact = await UserModal.findById(decoded.id);
             const contact1 = await UserSession.findOne({id:id});
-            if (contact && decoded.id===id &&contact1) {
+            if (contact && decoded.id===id &&!contact1) {
               if (contact.status == 'approved') {
                 if (contact.role == 'admin') {
                   return res.status(201).json({ message: 'User is Admin' });
