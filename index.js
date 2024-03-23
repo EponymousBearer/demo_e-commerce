@@ -19,7 +19,7 @@ const app = express();
 app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
-app.get("/", (req, res) => res.status(200).send("Hello world!!!!!!"));
+app.get("/", (req, res) => res.status(200).send("Hello world"));
 app.use(session({
   secret: 'secret', // Change this to a random string
   resave: false,
