@@ -21,33 +21,79 @@ AWS.config.update({
 // Create an instance of the Polly SDK
 const polly = new AWS.Polly();
 
+const secureString = (inputString) => {
+  let secureStr = '';
+
+  for (let i = 0; i < inputString.length; i++) {
+    let char = inputString[i];
+
+    if (/[a-zA-Z]/.test(char)) { // Check if the character is an alphabet
+      if (char === 'z') { // Handle 'z' separately to wrap around to 'a'
+        secureStr += 'a';
+      } else if (char === 'Z') { // Handle 'Z' separately to wrap around to 'A'
+        secureStr += 'A';
+      } else {
+        // Replace alphabet characters with the next character
+        secureStr += String.fromCharCode(char.charCodeAt(0) + 1);
+      }
+    } else {
+      // Replace non-alphabet characters with the next character in ASCII
+      secureStr += String.fromCharCode(char.charCodeAt(0) + 1);
+    }
+  }
+
+  return secureStr;
+};
+
+const originalStringFromSecure = (secureString) => {
+  let originalStr = '';
+
+  for (let i = 0; i < secureString.length; i++) {
+    let char = secureString[i];
+
+    if (/[a-zA-Z]/.test(char)) { // Check if the character is an alphabet
+      if (char === 'a') { // Handle 'a' separately to wrap around to 'z'
+        originalStr += 'z';
+      } else if (char === 'A') { // Handle 'A' separately to wrap around to 'Z'
+        originalStr += 'Z';
+      } else {
+        // Replace alphabet characters with the previous character
+        originalStr += String.fromCharCode(char.charCodeAt(0) - 1);
+      }
+    } else {
+      // Replace non-alphabet characters with the previous character in ASCII
+      originalStr += String.fromCharCode(char.charCodeAt(0) - 1);
+    }
+  }
+
+  return originalStr;
+};
+
 export const signin = async (req, res) => {
   let { email, password } = req.body;
   email = email.toLowerCase();
   try {
-    password = `${password}a`;
+    password = `KMS*(@&#TYVERHDJWKDQUIE${password}anJHU@&#*(JH#BJ@K#*(K))`;
     console.log(password);
     const oldUser = await UserModal.findOne({ email });
 
     if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
- 
+
     const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
 
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
+    // //code
+    // let originalString = `${oldUser._id}`;
+    // let securedString = secureString(originalString); console.log('secure', securedString);
+
+    // //decode
+    // let securedString1 = securedString
+    // let originalString1 = originalStringFromSecure(securedString1); console.log('notsecure', originalString1);
+
     const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, process.env.jwt_secret_key, { expiresIn: "1h" });
-    const existingSession = await UserSession.findOne({ id: oldUser._id });
-    if (existingSession) {
-      return res.status(403).json({ error: 'User already logged in' });
-    }
-  
-    // Create a new session
-    const expirationTime = new Date();
-    expirationTime.setHours(expirationTime.getHours() + 24); // 24 hours from now
-    // expirationTime.setMinutes(expirationTime.getMinutes() + 3); 
-    const session = new UserSession({ id: oldUser._id,  token:token });
-    await session.save();
- 
+    console.log(token);
+
     res.status(200).json({ result: oldUser, token, success: true });
 
   } catch (err) {
@@ -56,10 +102,7 @@ export const signin = async (req, res) => {
 };
 
 export const Logout = async (req, res) => {
-  console.log(req.params.id);
-    const userId = req.params.id; // Assuming you have authentication middleware
-    await UserSession.deleteOne({ id:userId });
-    res.json({ message: 'Logout successful' });
+
 }
 
 export const email = async (req, res) => {
@@ -93,7 +136,7 @@ export const email = async (req, res) => {
     <p style="color: #555; font-size: 16px; line-height: 1.6;">Hello,</p>
     <p style="color: #555; font-size: 16px; line-height: 1.6;">You have requested to reset your password. Please click the button below to reset your password:</p>
     <p style="text-align: center; margin: 20px 0;">
-      <a href="https://velvety-syrniki-62e6b9.netlify.app/reset-new-password/${user._id}/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reset Password</a>
+      <a href="https://localhost:5173/reset-new-password/${user._id}/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Reset Password</a>
     </p>
     <p style="color: #555; font-size: 16px; line-height: 1.6;">If you did not request this change, please ignore this email.</p>
     <div style="margin-top: 20px; font-size: 14px; color: #888;">
@@ -173,9 +216,8 @@ export const VerifyUseronAllPages = async (req, res) => {
           try {
             console.log(decoded.id);
             const contact = await UserModal.findById(decoded.id);
-            const contact1 = await UserSession.findOne({id:id});
-          
-            if (contact && decoded.id===id&& contact1.token==token) {
+
+            if (contact && decoded.id === id) {
               if (contact.status == 'approved') {
                 if (contact.role == 'admin') {
                   return res.status(201).json({ message: 'User is Admin' });
@@ -224,7 +266,8 @@ export const VerifyEmail = async (req, res) => {
 
       }
     }
-    password = `${password}a`;
+    password = `KMS*(@&#TYVERHDJWKDQUIE${password}anJHU@&#*(JH#BJ@K#*(K))`;
+
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -244,7 +287,7 @@ export const VerifyEmail = async (req, res) => {
           <p style="color: #555; font-size: 16px; line-height: 1.6;">Hello,</p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">You have requested to Register. Please click the button below to Verify Your Email:</p>
           <p style="text-align: center; margin: 20px 0;">
-            <a href="https://stellular-palmier-a0cd62.netlify.app/VerifyEmail/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Verify</a>
+            <a href="https://localhost:5173/VerifyEmail/${token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Verify</a>
           </p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">If you did not request this change, please ignore this email.</p>
           <div style="margin-top: 20px; font-size: 14px; color: #888;">
@@ -265,7 +308,7 @@ export const VerifyEmail = async (req, res) => {
 
 export const restPassword = async (req, res) => {
   const { id, token } = req.params
-  const { password } = req.body
+  let { password } = req.body
 
   try {
     const oldUser = await UserModal.findOne({ _id: id });
@@ -279,6 +322,8 @@ export const restPassword = async (req, res) => {
         console.log("error of token");
         return res.status(400).json({ success: false, message: "Error with token" });
       } else {
+    password = `KMS*(@&#TYVERHDJWKDQUIE${password}anJHU@&#*(JH#BJ@K#*(K))`;
+
         bcrypt.hash(password, 10)
           .then(hash => {
             UserModal.findByIdAndUpdate({ _id: id }, { password: hash })
@@ -305,12 +350,7 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const getAllUserSession = async (req, res) => {
-  try {
-    const users = await UserSession.find();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
-  }
+
 };
 
 export const deletecontact = async (req, res) => {
@@ -328,11 +368,12 @@ export const deletecontact = async (req, res) => {
 
 export const get_single_data = async (req, res) => {
   console.log('object');
-  const id = req.params.id; // Get the ID from URL parameter
 
+  const id = req.params.id; // Get the ID from URL parameter
+console.log('objecdasdasdasd  t',id);
   try {
     const contact = await UserModal.findById(id);
-
+ 
     if (contact) {
       res.status(200).json({ success: true, contact });
     } else {

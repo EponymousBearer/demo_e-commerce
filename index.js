@@ -96,11 +96,7 @@ AWS.config.update({
   region: 'us-east-1', // Change to your region
 });
 
-cron.schedule('* * * * *', async () => {
-  console.log('Cron job started'); 
-  await userSession.deleteMany({ expiresAt: { $lt: new Date() } });
-});
-
+ 
 ////////////////////////////////////////////////////////////////////////////
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true, }).then(() => { console.log('Connected Succesfully.') }).catch((err) => console.log('no connection ', err))
-const server = app.listen(PORT, () => console.log("Listening on port ", PORT)); 
+const server = app.listen(PORT, () => console.log("Listening on port ", PORT));    
