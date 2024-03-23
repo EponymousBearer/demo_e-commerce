@@ -59,7 +59,7 @@ app.post('/ap', async (req, res) => {
 
       console.log(transcript);
 
-  
+   
       res.json({ transcript });
   } catch (error) {
       console.error('Error processing audio:', error);
