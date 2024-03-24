@@ -101,43 +101,60 @@ const groq = new Groq({
   apiKey: process.env.groq
 });
 
-let story=`
-FutureFrame, founded by Muhammad Jibran and Muhammad Adnan, is an innovative player in the IT domain, committed to revolutionizing how businesses engage with technology. With a dynamic team size ranging from 1 to 10, FutureFrame is dedicated to delivering cutting-edge solutions tailored to meet the evolving needs of Softonic Solutions and beyond. While initially focusing on service-based offerings, FutureFrame has its sights set on transitioning towards product-centric solutions in the future.
+let story=` Q: Who founded FutureFrame? 
+A: FutureFrame was founded by Muhammad Jibran and Muhammad Adnan.
+Q: What is FutureFrame's focus in the IT domain? 
+A: FutureFrame is committed to revolutionizing how businesses engage with technology.
+Q: How large is the team at FutureFrame? 
+A: FutureFrame has a dynamic team size ranging from 1 to 10 members.
+Q: What kind of solutions does FutureFrame deliver? 
+A: FutureFrame is dedicated to delivering cutting-edge solutions tailored to meet the evolving needs of Softonic Solutions and beyond.
+Q: What are FutureFrame's future plans? 
+A: While initially focusing on service-based offerings, FutureFrame aims to transition towards product-centric solutions in the future.
+ 
+Q: What are the product categories offered by FutureFrame?
+Chatbots: -
+1.	Lead Generation Chatbot
+2.	PDF Train Chatbot
+3.	Appointment Scheduling Chatbots
+4.	HR Chatbots
+5.	Legal Advisor Chatbots
+6.	AI Sales call Agent
+7.	AI cold Call Agent 
+Website Development: -
+1.	E-commerce Website
+2.	Blog Website
+3.	Shopify
+4.	Wix
+5.	WordPress 
+6.	WebFlow
+Q: What is FutureFrame's Lead Generation Chatbot?
+A: FutureFrame's Lead Generation Chatbot is an AI-driven solution designed to identify and qualify potential leads through intuitive conversations. It empowers sales efforts by streamlining the lead generation process.
 
-Our Product Categories:
-a)	Chatbot Solutions:
+Q: How does the PDF Train Chatbot work?
+A: The PDF Train Chatbot simplifies document navigation and comprehension by assisting users in understanding complex PDF documents effortlessly. It provides guidance and support to navigate through documents with ease.
 
-1)Lead Generation Chatbot:
-Empower your sales efforts with our AI-driven Lead Generation Chatbot, designed to identify and qualify potential leads through intuitive conversations.
+Q: What are Appointment Scheduling Chatbots used for?
+A: Appointment Scheduling Chatbots offered by FutureFrame streamline the scheduling process for businesses and clients. They facilitate the management of appointments and bookings, making the process seamless and efficient.
 
-2)PDF Train Chatbot:
-Simplify document navigation and comprehension with our PDF Train Chatbot, assisting users in understanding complex PDF documents effortlessly.
+Q: What are the benefits of using HR Chatbots from FutureFrame?
+A: FutureFrame's HR Chatbots provide instant support for queries related to employee onboarding, policies, and more. They enhance HR operations by offering quick and efficient assistance to employees and HR personnel.
 
-3)Appointment Scheduling Chatbots:
-Seamlessly manage appointments and bookings with our Appointment Scheduling Chatbots, streamlining the scheduling process for both businesses and clients.
+Q: How do Legal Chatbots from FutureFrame assist with legal matters?
+A: Legal Chatbots offered by FutureFrame facilitate legal processes and inquiries by providing guidance on various legal matters and documentation. They help users navigate through legal complexities with ease.
 
-4)HR Chatbots:
-Enhance HR operations with our HR Chatbots, providing instant support for queries related to employee onboarding, policies, and more.
+Q: What platforms does FutureFrame specialize in for website development?
+A: FutureFrame specializes in website development across multiple platforms, including popular CMS solutions such as Shopify, Wix, and WordPress. They tailor websites to meet the specific needs of their clients.
 
-5)Legal Chatbots:
-Facilitate legal processes and inquiries with our Legal Chatbots, offering guidance on various legal matters and documentation.
+Q: What are the key features of FutureFrame's e-commerce website solutions?
+A: FutureFrame's e-commerce website solutions help businesses build a robust online presence. They are tailored to meet the unique requirements of each business, ensuring a seamless and effective e-commerce platform.
 
-6)Website Development:
-FutureFrame specializes in website development across multiple platforms, including CMS solutions such as Shopify, Wix, and WordPress.
+Q: How does FutureFrame's AI Cold Call Agent Service enhance sales outreach?
+A: FutureFrame's AI Cold Call Agent Service represents a paradigm shift in sales outreach strategies. It leverages advanced AI algorithms to optimize the cold calling process, improving efficiency and effectiveness in prospect engagement.
 
-7)E-commerce Website Solutions:
-Build a robust online presence with our e-commerce website development services, tailored to meet the unique requirements of your business.
-
-8)AI Cold Call Agent Service:
-Our AI Cold Call Agent service represents a paradigm shift in sales outreach strategies, leveraging advanced AI algorithms to optimize the cold calling process. Through personalized communication and lead prioritization, this service aims to enhance efficiency and effectiveness in prospect engagement.
-We welcome the opportunity to discuss how FutureFrame can customize its offerings to align seamlessly with the unique needs and goals of Softonic Solutions and other prospective clients.
-
-What is FutureFrame?
-
-FutureFrame is an IT company specializing in innovative solutions.
-
-Who are the founders of FutureFrame?
-Muhammad Jibran and Muhammad Adnan are the founders.
+Q: How can FutureFrame customize its offerings for clients like Softonic Solutions?
+A: FutureFrame welcomes the opportunity to discuss and customize its offerings to align with the unique needs and goals of clients such as Softonic Solutions. They tailor their solutions to meet specific requirements and objectives.
+ 
 
 What is the team size of FutureFrame?
 FutureFrame's team size ranges from 1 to 10 members.
@@ -343,6 +360,8 @@ Yes, FutureFrame optimizes website performance through techniques such as code o
 
 How can I contact FutureFrame for inquiries or consultations?
 You can reach out to FutureFrame via email at futureframe3@gmail.com for inquiries, consultations, or any assistance needed.
+
+
 
 `
 
