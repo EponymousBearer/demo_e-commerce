@@ -98,7 +98,7 @@ AWS.config.update({
 });
 
 const groq = new Groq({
-  apiKey: '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'
+  apiKey: process.env.groq
 });
 
 let story=`
