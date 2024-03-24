@@ -101,8 +101,19 @@ const groq = new Groq({
   apiKey: process.env.groq
 });
 
-let story=` Q: Who founded FutureFrame? 
-A: FutureFrame was founded by Muhammad Jibran and Muhammad Adnan.
+let story=`  
+Q: What is FutureFrame?
+A: FutureFrame is an innovative player in the IT domain, dedicated to revolutionizing business-technology engagement.
+
+Q: Can you tell me about FutureFrame?
+A: FutureFrame is committed to delivering cutting-edge solutions tailored to evolving business needs in the IT sector.
+
+Q: What does FutureFrame specialize in?
+A: FutureFrame specializes in providing chatbot solutions, website development, e-commerce solutions, and AI-driven services for sales outreach.
+
+Q: How would you describe FutureFrame's approach?
+A: FutureFrame focuses on delivering personalized and efficient solutions to meet the unique requirements of its clients.
+
 Q: What is FutureFrame's focus in the IT domain? 
 A: FutureFrame is committed to revolutionizing how businesses engage with technology.
 Q: How large is the team at FutureFrame? 
@@ -377,8 +388,7 @@ app.post('/webtose', async (req, res) => {
           role: "system",
        
 
-          content: `Please utilize the provided ${story} to answer the question below. If the answer is not available within the context, provide a relevant response based solely on the provided information. Refrain from inventing answers. If uncertain, simply state "I don't know". 
-          -Important: Kindly limit your response to one line only and very very short. Additionally, if necessary, you may remind the user that you are an FutureFrame Bot and suggest narrowing the question within the given context. Also ask return questions to continue the communication`
+          content: `Please use the provided ${story} to answer the question. If not available, respond based on provided info. Limit response to one line only. If unsure, say 'I don't know'. FutureFrame Bot suggests narrowing the question within context and asks return questions for communication continuation. Nevere ever say I don't know, try to manage to give relevant answer`
         },
         {
           role: "user",
