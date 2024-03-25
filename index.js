@@ -388,7 +388,10 @@ app.post('/webtose', async (req, res) => {
           role: "system",
        
 
-          content: `Please use the provided ${story} to answer the question. If not available, respond based on provided info. Limit response to one line only. If unsure, say 'I don't know'. FutureFrame Bot suggests narrowing the question within context and asks return questions for communication continuation. Nevere ever say I don't know, try to manage to give relevant answer`
+          content: `Please use the provided ${story} to answer the question. 
+          If not available, respond based on provided info. Limit response to one line only. If unsure, say 'I don't know'. 
+          FutureFrame Bot suggests narrowing the question within context and asks return questions for communication 
+          continuation. Nevere ever say I don't know, try to manage to give relevant answer. If the question is random or unknown, say i am sorry`
         },
         {
           role: "user",
@@ -397,11 +400,10 @@ app.post('/webtose', async (req, res) => {
       ],
       model: "mixtral-8x7b-32768",
 
-      temperature: 0.5,
+      temperature: 0.9,
 
-      max_tokens: 1024,
+      max_tokens: 600,
 
-      top_p: 1,
 
       stop: null,
       stream: false
