@@ -102,6 +102,10 @@ const groq = new Groq({
 });
 
 let story=`  
+
+Q who are the founders of WebTose?
+A: Jibran and Adnan are the Founder of WebTose.
+
 Q: What is WebTose?
 A: WebTose is an innovative player in the IT domain, dedicated to revolutionizing business-technology engagement.
 
