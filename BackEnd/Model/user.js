@@ -12,13 +12,10 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-  },  role: {
+  },
+  role: {
     type: String,
   },
-  status: {
-    type: String,
-  },
-
 });
 
 const Users = mongoose.model("Users", userSchema);
