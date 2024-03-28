@@ -41,13 +41,12 @@ export const Register = async (req, res) => {
 };
 
 export const ForgotPassword = async (req, res) => {
-  const { id } = req.params;
-  let { password } = req.body;
+  let { email, password } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await UserModal.findByIdAndUpdate({ _id: id }, { password: hashedPassword });
+    await UserModal.findOneAndUpdate({ email: email }, { password: hashedPassword });
 
     res.status(200).json({ success: true, message: "Password reset successfully" });
 
@@ -58,15 +57,12 @@ export const ForgotPassword = async (req, res) => {
 };
 
 export const MyAccount = async (req, res) => {
-  // let { email, password } = req.body;
-  // email = email.toLowerCase();
   try {
-    const user = req.params.id;
-// console.log(user)
-    const userDetails = await UserModal.findById(user);
-
+    const { email } = req.params; 
+    const lowercaseEmail = email.toLowerCase(); 
+    const userDetails = await UserModal.findOne({ email: lowercaseEmail }); 
     if (!userDetails) {
-      return res.status(404).json({ message: "User details not found" });
+      return res.status(404).json({ success: false, message: "User details not found" });
     }
 
     res.status(200).json({ success: true, user: userDetails });
@@ -75,6 +71,7 @@ export const MyAccount = async (req, res) => {
     res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
+
 
 export const getalluser = async (req, res) => {
  

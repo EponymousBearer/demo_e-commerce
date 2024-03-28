@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AppContext } from '../Context/CartContext';
 import Cookies from 'js-cookie';
+import { ShoppingCart } from 'lucide-react';
 
 const Header = () => {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -16,9 +17,11 @@ const Header = () => {
     Cookies.set('islogin', 'false');
     Cookies.remove('islogin');
     setIsUserLoggedIn(false);
+    Cookies.remove('email');
+    window.location.href = '/';
   };
   return (
-    <div className="flex items-center py-8 lg:py-8">
+    <div className="flex items-center py-8 lg:py-8 px-10">
       <div className="hidden lg:flex items-center justify-end gap-x-8 flex-auto">
         <Link href="/">Home</Link>
         {!isUserLoggedIn && (
@@ -33,7 +36,7 @@ const Header = () => {
             <button onClick={handleLogout}>Logout</button>
           </>
         )}
-        <p>Total quantity: {cart}</p>
+        <Link href="/pages/cart"><div className='flex'><ShoppingCart /> <span className='-mt-3'>{cart}</span></div></Link>
       </div>
     </div>
   )

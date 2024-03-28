@@ -4,7 +4,7 @@ import React, { useEffect, useState, useContext } from 'react'
 import Image from 'next/image';
 import { AppContext } from '@/app/Context/CartContext';
 
-interface Product {
+export interface Product {
   title: string;
   description: string;
   price: number;
@@ -16,8 +16,8 @@ export default function SingleProduct({ params }: { params: any }) {
   const [data, setData] = useState<Product | null>(null);
   const { cart, setCart, addToCart } = useContext(AppContext);
 
-  const handleAddToCart = () => {
-    addToCart({ productId: productId, quantity: 1 });
+  const handleAddToCart = (params:any) => {
+    addToCart({ productId: params, quantity: 1 });
     setCart((prevTotal: number) => prevTotal + 1);
   };
 
@@ -35,20 +35,19 @@ export default function SingleProduct({ params }: { params: any }) {
   }, [productId]);
 
   return (
-    <div>
-      SingleProduct
+    <div className='px-10'>
       {data && (
-        <div>
-          <div><Image width={300} height={300} alt={data.title} src={data.image} /></div>
-          <div>
-            <p>Product Title: {data.title}</p>
-            <p>Product Description: {data.description}</p>
-            <p>Price: {data.price}</p>
+        <div className='flex gap-x-10'>
+          <div><Image width={500} height={500} alt={data.title} src={data.image} /></div>
+          <div className='space-y-4'>
+            <h2 className='text-2xl'>{data.title}</h2>
+            <p>{data.description}</p>
+            <p>${data.price}</p>
+            <button className='bg-blue-300 px-4 py-2' onClick={()=>handleAddToCart(data.title)}>Add To Cart</button>
           </div>
-          <br />
         </div>
       )}
-      <button onClick={handleAddToCart}>Add To Cart</button>
+
     </div>
   )
 }

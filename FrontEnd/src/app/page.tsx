@@ -22,9 +22,9 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="bg-blue-200 m-10 flex gap-x-10">
+    <main className="bg-blue-200 flex justify-center gap-x-10">
       <div>
-        <div>All Products</div>
+        <div className="text-center text-2xl font-bold py-6">All Products</div>
         <div className="flex flex-col-3 gap-x-8 justify-center">
           {data.map((dataa: any, index) => (
             <Link key={index} href={`/pages/singleProduct/${dataa._id}`}>

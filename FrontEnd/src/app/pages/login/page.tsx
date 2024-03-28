@@ -2,7 +2,7 @@
 "use client"
 import axios from 'axios';
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Cookies from 'js-cookie';
 
 const login = () => {
@@ -12,6 +12,7 @@ const login = () => {
   const handleuser = async () => {
     const response = await axios.post(`http://localhost:5003/auth/LogIn`, { email, password });
     Cookies.set('islogin', 'true')
+      Cookies.set('email', email, { expires: 1, path: '/' });
     window.location.href = '/';
   }
 
